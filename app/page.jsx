@@ -8,7 +8,7 @@ import {
   Check,
   ChevronRight,
   CookingPot,
-  CreditCard,
+  MessageCircle,
   Minus,
   PackageCheck,
   Plus,
@@ -19,7 +19,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { getOrderMailto, money, products, sharedSpecs, sourceNotes } from "../lib/catalog";
+import { getOrderMailto, getOrderWhatsapp, money, products, sharedSpecs, sourceNotes } from "../lib/catalog";
 
 export default function Home() {
   const [cart, setCart] = useState({ "single-can": 1, "case-six": 0 });
@@ -49,6 +49,10 @@ export default function Home() {
 
   const mailtoHref = useMemo(() => {
     return getOrderMailto(lineItems);
+  }, [lineItems]);
+
+  const whatsappHref = useMemo(() => {
+    return getOrderWhatsapp(lineItems);
   }, [lineItems]);
 
   return (
@@ -86,12 +90,17 @@ export default function Home() {
             cases of six with clear pricing.
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href="#shop">
+            <a
+              className="primary-action"
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle size={18} /> Order Now
+            </a>
+            <a className="secondary-action" href="#shop">
               Shop prices <ChevronRight size={18} />
             </a>
-            <button className="secondary-action" onClick={() => setCartOpen(true)}>
-              Review order
-            </button>
           </div>
           <div className="price-strip" aria-label="Featured prices">
             <span>
@@ -148,8 +157,8 @@ export default function Home() {
           <p className="kicker">Shop FastGas N2O</p>
           <h2>Simple pricing, clean checkout.</h2>
           <p>
-            Build your order, then request an invoice. Payments and delivery are
-            confirmed directly after order review.
+            Build your order, then message us on WhatsApp. Payments and
+            delivery are confirmed directly after order review.
           </p>
         </div>
 
@@ -302,9 +311,14 @@ export default function Home() {
             <strong>{money(total)}</strong>
           </div>
 
-          <a className="checkout-button" href={mailtoHref}>
-            <CreditCard size={18} />
-            Request invoice
+          <a
+            className="checkout-button"
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle size={18} />
+            Order Now
           </a>
           <p className="cart-note">
             Delivery, stock confirmation, and payment instructions are finalized

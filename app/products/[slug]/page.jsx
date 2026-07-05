@@ -7,13 +7,19 @@ import {
   ChevronLeft,
   ChevronRight,
   CookingPot,
-  Mail,
+  MessageCircle,
   ScanLine,
   ShieldCheck,
   Sparkles,
   Truck,
 } from "lucide-react";
-import { getOrderMailto, getProductBySlug, money, products, sourceNotes } from "../../../lib/catalog";
+import {
+  getOrderWhatsapp,
+  getProductBySlug,
+  money,
+  products,
+  sourceNotes,
+} from "../../../lib/catalog";
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
@@ -30,10 +36,21 @@ export async function generateMetadata({ params }) {
   }
 
   return {
-    title: `${product.shortName} | FastGas Kenya`,
-    description: `${product.name} for culinary cocktail foams, espumas, whipped cream, cafe, bar, and catering use in Kenya. ${money(product.price)}.`,
+    title: `${product.shortName} | Buy in Kenya`,
+    description: `${product.name} for culinary cocktail foams, espumas, whipped cream, cafe, bar, and catering use in Kenya. ${money(product.price)}. Order on WhatsApp for Nairobi dispatch.`,
+    keywords: [
+      product.shortName,
+      "FastGas Kenya",
+      "N2O cream charger Kenya",
+      "buy cream charger Nairobi",
+      ...product.useCases,
+    ],
     alternates: {
       canonical: `/products/${product.slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
     openGraph: {
       title: `${product.shortName} - ${money(product.price)}`,
@@ -51,6 +68,12 @@ export async function generateMetadata({ params }) {
       locale: "en_KE",
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.shortName} - ${money(product.price)}`,
+      description: product.detailDescription,
+      images: [product.image],
+    },
   };
 }
 
@@ -62,7 +85,10 @@ export default async function ProductDetailPage({ params }) {
     notFound();
   }
 
-  const mailtoHref = getOrderMailto([{ ...product, quantity: 1, total: product.price }], product);
+  const whatsappHref = getOrderWhatsapp(
+    [{ ...product, quantity: 1, total: product.price }],
+    product,
+  );
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -133,8 +159,13 @@ export default async function ProductDetailPage({ params }) {
           </div>
 
           <div className="hero-actions">
-            <a className="primary-action" href={mailtoHref}>
-              Request invoice <Mail size={18} />
+            <a
+              className="primary-action"
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle size={18} /> Order Now
             </a>
             <a className="secondary-action" href="#use-cases">
               View culinary uses <ChevronRight size={18} />
@@ -243,8 +274,9 @@ export default async function ProductDetailPage({ params }) {
             <p className="kicker">Order {product.shortName}</p>
             <h2>{money(product.price)} for {product.unit}.</h2>
             <p>
-              Request an invoice for culinary use in bars, cafes, restaurants,
-              bakeries, catering teams, and food-service operations.
+              Message us on WhatsApp to order for culinary use in bars, cafes,
+              restaurants, bakeries, catering teams, and food-service
+              operations.
             </p>
             <div className="source-list">
               {sourceNotes.map((note) => (
@@ -258,9 +290,14 @@ export default async function ProductDetailPage({ params }) {
           <div className="order-card">
             <strong>{product.name}</strong>
             <span>{money(product.price)} · {product.unit}</span>
-            <a className="checkout-button" href={mailtoHref}>
-              <Mail size={18} />
-              Request invoice
+            <a
+              className="checkout-button"
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle size={18} />
+              Order Now
             </a>
             <p>
               Food-service and culinary applications only. Nitrous oxide must
@@ -273,7 +310,7 @@ export default async function ProductDetailPage({ params }) {
       <footer>
         <strong>FastGas Kenya</strong>
         <span>fastgaskenya.shop/products/{product.slug}</span>
-        <a href={mailtoHref}>orders@fastgaskenya.shop</a>
+        <a href="mailto:orders@fastgaskenya.shop">orders@fastgaskenya.shop</a>
       </footer>
     </main>
   );
