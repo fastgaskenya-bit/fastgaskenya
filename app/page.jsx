@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   BadgeCheck,
@@ -18,58 +19,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
-
-const products = [
-  {
-    id: "single-can",
-    eyebrow: "Single cylinder",
-    name: "FastGas Original 670g N2O Can",
-    price: 5000,
-    unit: "1 can",
-    image:
-      "https://fast-gas.com/wp-content/uploads/2022/07/PRODUCT-PAGE_670_front-view-e1764672680684.png",
-    alt: "FastGas Original 670g N2O cylinder",
-    description:
-      "Food-service nitrous oxide cylinder for whipped cream, espumas, sauces, and cocktail programs.",
-    details: ["670g capacity", "M10x1 valve", "QR authenticity check"],
-  },
-  {
-    id: "case-six",
-    eyebrow: "Best value",
-    name: "FastGas Original Case of 6",
-    price: 29000,
-    unit: "6 cans",
-    image:
-      "https://fast-gas.com/wp-content/uploads/2022/07/PRODUCT-PAGE_670_-box-600x600.png",
-    alt: "FastGas Original 670g case box",
-    description:
-      "A sealed case for restaurants, lounges, cafes, caterers, and wholesale buyers who need steady stock.",
-    details: ["KSh 4,833 per can", "12.6kg case weight", "Fast restock format"],
-  },
-];
-
-const specs = [
-  ["Capacity", "670 grams"],
-  ["Gas", "Nitrous oxide"],
-  ["Food use", "E942 culinary applications"],
-  ["Casing", "Disposable carbon steel"],
-  ["Valve", "M10x1"],
-  ["Units per case", "6"],
-];
-
-const sourceNotes = [
-  "Official FastGas lists the 670g Original Cream Charger as European-quality nitrous oxide in a safe, disposable steel canister.",
-  "FastGas highlights QR verification, laser engravings, unique barcodes, and capacity checks to help customers avoid fake products.",
-  "The brand positions the product for whipped cream, foams, espumas, cocktails, sauces, and food-service businesses.",
-];
-
-function money(value) {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { getOrderMailto, money, products, sharedSpecs, sourceNotes } from "../lib/catalog";
 
 export default function Home() {
   const [cart, setCart] = useState({ "single-can": 1, "case-six": 0 });
@@ -98,11 +48,8 @@ export default function Home() {
   };
 
   const mailtoHref = useMemo(() => {
-    const orderLines = lineItems
-      .map((item) => `${item.quantity} x ${item.name} (${item.unit}) - ${money(item.total)}`)
-      .join("%0D%0A");
-    return `mailto:orders@fastgaskenya.shop?subject=FastGas Kenya order request&body=Hi FastGas Kenya,%0D%0A%0D%0AI'd like to order:%0D%0A${orderLines || "1 x FastGas Original 670g N2O Can - KSh 5,000"}%0D%0A%0D%0ATotal: ${money(total || 5000)}%0D%0A%0D%0ADelivery location:%0D%0AName:%0D%0APhone:`;
-  }, [lineItems, total]);
+    return getOrderMailto(lineItems);
+  }, [lineItems]);
 
   return (
     <main>
@@ -224,6 +171,9 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
+                <Link className="details-link" href={`/products/${product.slug}`}>
+                  Product ad page <ChevronRight size={16} />
+                </Link>
               </div>
               <div className="product-buy">
                 <span>
@@ -281,7 +231,7 @@ export default function Home() {
           <h2>Built for high-volume cream, foam, and espuma work.</h2>
         </div>
         <div className="spec-grid">
-          {specs.map(([label, value]) => (
+          {sharedSpecs.map(([label, value]) => (
             <div className="spec" key={label}>
               <span>{label}</span>
               <strong>{value}</strong>
