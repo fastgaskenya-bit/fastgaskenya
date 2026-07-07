@@ -329,7 +329,7 @@ export default async function ProductDetailPage({ params }) {
       <footer>
         <strong>FastGas Kenya</strong>
         <span>fastgaskenya.shop/products/{product.slug}</span>
-        <a href="mailto:orders@fastgaskenya.shop">orders@fastgaskenya.shop</a>
+        <a href="mailto:fastgaskenya@gmail.com">fastgaskenya@gmail.com</a>
       </footer>
     </main>
   );
