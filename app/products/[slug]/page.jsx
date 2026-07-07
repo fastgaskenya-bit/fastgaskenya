@@ -169,6 +169,8 @@ export default async function ProductDetailPage({ params }) {
               eventPayload={{
                 content_name: product.name,
                 content_category: "product",
+                content_ids: [product.contentId || product.id],
+                content_type: "product",
                 currency: "KES",
                 value: product.price,
               }}
@@ -307,6 +309,8 @@ export default async function ProductDetailPage({ params }) {
               eventPayload={{
                 content_name: product.name,
                 content_category: "product",
+                content_ids: [product.contentId || product.id],
+                content_type: "product",
                 currency: "KES",
                 value: product.price,
               }}

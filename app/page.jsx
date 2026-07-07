@@ -41,6 +41,12 @@ export default function Home() {
   const total = lineItems.reduce((sum, item) => sum + item.total, 0);
   const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const cartContentIds = lineItems.map((item) => item.contentId || item.id);
+  const cartContents = lineItems.map((item) => ({
+    id: item.contentId || item.id,
+    quantity: item.quantity,
+  }));
+
   const updateQuantity = (id, change) => {
     setCart((current) => {
       const nextValue = Math.max(0, (current[id] || 0) + change);
@@ -54,6 +60,9 @@ export default function Home() {
         trackMetaEvent("AddToCart", {
           content_name: product?.name || id,
           content_category: "product",
+          content_ids: [product?.contentId || id],
+          content_type: "product",
+          contents: [{ id: product?.contentId || id, quantity: 1 }],
           value: product?.price || 0,
           currency: "KES",
         });
@@ -91,6 +100,10 @@ export default function Home() {
           onClick={() => {
             setCartOpen(true);
             trackMetaEvent("ViewCart", {
+              content_ids: cartContentIds,
+              content_type: "product",
+              contents: cartContents,
+              num_items: itemCount,
               currency: "KES",
               value: total,
             });
@@ -123,6 +136,10 @@ export default function Home() {
               onClick={() => {
                 trackMetaEvent("InitiateCheckout", {
                   content_name: "FastGas Kenya order",
+                  content_ids: cartContentIds,
+                  content_type: "product",
+                  contents: cartContents,
+                  num_items: itemCount,
                   currency: "KES",
                   value: total,
                 });
@@ -219,7 +236,8 @@ export default function Home() {
                   trackMetaEvent("ViewContent", {
                     content_name: product.name,
                     content_category: "product",
-                    content_ids: [product.id],
+                    content_ids: [product.contentId || product.id],
+                    content_type: "product",
                     currency: "KES",
                     value: product.price,
                   });
@@ -363,6 +381,10 @@ export default function Home() {
             onClick={() => {
               trackMetaEvent("InitiateCheckout", {
                 content_name: "FastGas cart checkout",
+                content_ids: cartContentIds,
+                content_type: "product",
+                contents: cartContents,
+                num_items: itemCount,
                 currency: "KES",
                 value: total,
               });
