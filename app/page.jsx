@@ -153,10 +153,10 @@ export default function Home() {
           </div>
           <div className="price-strip" aria-label="Featured prices">
             <span>
-              Can <strong>KSh 5,000</strong>
+              Can <strong>KSh 4,800</strong>
             </span>
             <span>
-              Pack of 6 <strong>KSh 29,000</strong>
+              Pack of 6 <strong>KSh 28,000</strong>
             </span>
           </div>
         </div>
