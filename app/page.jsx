@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { getOrderMailto, getOrderWhatsapp, money, products, sharedSpecs, sourceNotes } from "../lib/catalog";
+import { trackMetaEvent } from "../lib/meta";
 
 export default function Home() {
   const [cart, setCart] = useState({ "single-can": 1, "case-six": 0 });
@@ -41,10 +42,25 @@ export default function Home() {
   const itemCount = lineItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const updateQuantity = (id, change) => {
-    setCart((current) => ({
-      ...current,
-      [id]: Math.max(0, (current[id] || 0) + change),
-    }));
+    setCart((current) => {
+      const nextValue = Math.max(0, (current[id] || 0) + change);
+      const nextCart = {
+        ...current,
+        [id]: nextValue,
+      };
+
+      if (change > 0 && nextValue > 0) {
+        const product = products.find((item) => item.id === id);
+        trackMetaEvent("AddToCart", {
+          content_name: product?.name || id,
+          content_category: "product",
+          value: product?.price || 0,
+          currency: "KES",
+        });
+      }
+
+      return nextCart;
+    });
   };
 
   const mailtoHref = useMemo(() => {
@@ -70,7 +86,16 @@ export default function Home() {
           <a href="#verify">Verify</a>
           <a href="#specs">Specs</a>
         </nav>
-        <button className="cart-button" onClick={() => setCartOpen(true)}>
+        <button
+          className="cart-button"
+          onClick={() => {
+            setCartOpen(true);
+            trackMetaEvent("ViewCart", {
+              currency: "KES",
+              value: total,
+            });
+          }}
+        >
           <ShoppingBag size={18} />
           <span>Cart</span>
           <strong>{itemCount}</strong>
@@ -95,6 +120,13 @@ export default function Home() {
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                trackMetaEvent("InitiateCheckout", {
+                  content_name: "FastGas Kenya order",
+                  currency: "KES",
+                  value: total,
+                });
+              }}
             >
               <MessageCircle size={18} /> Order Now
             </a>
@@ -180,7 +212,19 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link className="details-link" href={`/products/${product.slug}`}>
+                <Link
+                className="details-link"
+                href={`/products/${product.slug}`}
+                onClick={() => {
+                  trackMetaEvent("ViewContent", {
+                    content_name: product.name,
+                    content_category: "product",
+                    content_ids: [product.id],
+                    currency: "KES",
+                    value: product.price,
+                  });
+                }}
+              >
                   Product ad page <ChevronRight size={16} />
                 </Link>
               </div>
@@ -316,6 +360,13 @@ export default function Home() {
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+              trackMetaEvent("InitiateCheckout", {
+                content_name: "FastGas cart checkout",
+                currency: "KES",
+                value: total,
+              });
+            }}
           >
             <MessageCircle size={18} />
             Order Now

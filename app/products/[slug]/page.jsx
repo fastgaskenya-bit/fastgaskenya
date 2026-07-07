@@ -20,6 +20,7 @@ import {
   products,
   sourceNotes,
 } from "../../../lib/catalog";
+import MetaTrackedLink from "../../components/meta-tracked-link";
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
@@ -159,14 +160,21 @@ export default async function ProductDetailPage({ params }) {
           </div>
 
           <div className="hero-actions">
-            <a
+            <MetaTrackedLink
               className="primary-action"
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
+              eventName="InitiateCheckout"
+              eventPayload={{
+                content_name: product.name,
+                content_category: "product",
+                currency: "KES",
+                value: product.price,
+              }}
             >
               <MessageCircle size={18} /> Order Now
-            </a>
+            </MetaTrackedLink>
             <a className="secondary-action" href="#use-cases">
               View culinary uses <ChevronRight size={18} />
             </a>
@@ -290,15 +298,22 @@ export default async function ProductDetailPage({ params }) {
           <div className="order-card">
             <strong>{product.name}</strong>
             <span>{money(product.price)} · {product.unit}</span>
-            <a
+            <MetaTrackedLink
               className="checkout-button"
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
+              eventName="InitiateCheckout"
+              eventPayload={{
+                content_name: product.name,
+                content_category: "product",
+                currency: "KES",
+                value: product.price,
+              }}
             >
               <MessageCircle size={18} />
               Order Now
-            </a>
+            </MetaTrackedLink>
             <p>
               Food-service and culinary applications only. Nitrous oxide must
               never be inhaled or used recreationally.
