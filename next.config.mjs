@@ -16,6 +16,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/all-in-one-bundle",
+        destination: "/products/all-in-one-bundle",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
