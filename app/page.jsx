@@ -23,7 +23,7 @@ import { getOrderMailto, getOrderWhatsapp, money, products, sharedSpecs, sourceN
 import { trackMetaEvent } from "../lib/meta";
 
 export default function Home() {
-  const [cart, setCart] = useState({ "single-can": 1, "case-six": 0 });
+  const [cart, setCart] = useState({});
   const [cartOpen, setCartOpen] = useState(false);
 
   const lineItems = useMemo(
