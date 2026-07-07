@@ -798,6 +798,22 @@ footer strong {
   animation: rise 700ms ease both;
 }
 
+/* Product pages: compact hero so the Order CTA stays above the fold. */
+.product-detail-hero h1 {
+  margin-bottom: 14px;
+  font-size: clamp(30px, 3.4vw, 46px);
+  line-height: 1.02;
+}
+
+.product-detail-copy .hero-lede {
+  margin-bottom: 4px;
+  font-size: clamp(15px, 1.4vw, 18px);
+}
+
+.product-detail-hero .hero-actions {
+  margin: 20px 0 12px;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -1010,6 +1026,12 @@ footer strong {
     min-height: auto;
   }
 
+  .product-detail-hero {
+    min-height: auto;
+    align-items: start;
+    padding-top: clamp(20px, 5vw, 40px);
+  }
+
   .hero-product {
     min-height: 470px;
   }
@@ -1049,6 +1071,29 @@ footer strong {
 
   h1 {
     font-size: clamp(43px, 16vw, 72px);
+  }
+
+  .product-detail-hero h1 {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+
+  .product-detail-copy .back-link {
+    margin-bottom: 12px;
+  }
+
+  .product-detail-copy .hero-lede {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .product-detail-hero .hero-actions {
+    margin: 16px 0 10px;
+  }
+
+  .product-detail-hero .hero-actions .primary-action {
+    flex: 1 1 100%;
   }
 
   .trust-band {

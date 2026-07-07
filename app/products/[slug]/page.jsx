@@ -175,7 +175,7 @@ export default async function ProductDetailPage({ params }) {
                 value: product.price,
               }}
             >
-              <MessageCircle size={18} /> Order Now
+              <MessageCircle size={18} /> Order Now on WhatsApp
             </MetaTrackedLink>
             <a className="secondary-action" href="#use-cases">
               View culinary uses <ChevronRight size={18} />
@@ -316,7 +316,7 @@ export default async function ProductDetailPage({ params }) {
               }}
             >
               <MessageCircle size={18} />
-              Order Now
+              Order Now on WhatsApp
             </MetaTrackedLink>
             <p>
               Food-service and culinary applications only. Nitrous oxide must
