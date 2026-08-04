@@ -16,10 +16,24 @@ npm install
 Add to `.env.local` (dev) and to Vercel Project Settings → Environment Variables
 (prod). Values come from the service-account JSON.
 
+**Preferred — one env var, whole JSON:**
 ```
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"fastgas-ffd66","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"firebase-adminsdk-xxx@fastgas-ffd66.iam.gserviceaccount.com","client_id":"...","auth_uri":"...","token_uri":"...","auth_provider_x509_cert_url":"...","client_x509_cert_url":"..."}
+```
+Paste the ENTIRE contents of the downloaded service-account JSON as the value.
+If your host mangles multi-line pastes, base64-encode it first
+(`base64 -i service-account.json` on macOS) and paste the base64 string — the
+code auto-detects both formats.
+
+**Fallback — three separate vars (only if you prefer):**
+```
+FIREBASE_PROJECT_ID=fastgas-ffd66
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@fastgas-ffd66.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
+```
+
+**Always set these:**
+```
 IP_SALT=some-random-string-here
 ADMIN_PASSWORD=pick-a-strong-password
 
