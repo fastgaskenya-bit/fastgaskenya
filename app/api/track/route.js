@@ -64,6 +64,17 @@ async function ipinfoLookup(ip) {
   }
 }
 
+function parseNetlifyGeo(header) {
+  if (!header) return null;
+  try {
+    const decoded = Buffer.from(header, "base64").toString("utf8");
+    const j = JSON.parse(decoded);
+    return j && typeof j === "object" ? j : null;
+  } catch {
+    return null;
+  }
+}
+
 function getIp(req) {
   const xff = req.headers.get("x-forwarded-for") || "";
   return xff.split(",")[0].trim() || req.headers.get("x-real-ip") || "unknown";
@@ -107,17 +118,23 @@ export async function POST(req) {
     const ua = req.headers.get("user-agent") || "";
     const parsed = UAParser(ua);
 
+    // Geo from platform headers. Vercel: x-vercel-ip-*. Cloudflare: cf-*.
+    // Netlify: x-nf-geo, a base64-encoded JSON blob.
+    const nfGeo = parseNetlifyGeo(req.headers.get("x-nf-geo"));
     const country =
       req.headers.get("x-vercel-ip-country") ||
       req.headers.get("cf-ipcountry") ||
+      nfGeo?.country?.code ||
       null;
     const city =
       req.headers.get("x-vercel-ip-city") ||
       req.headers.get("cf-ipcity") ||
+      nfGeo?.city ||
       null;
     const region =
       req.headers.get("x-vercel-ip-country-region") ||
       req.headers.get("cf-region") ||
+      nfGeo?.subdivision?.code ||
       null;
 
     const ipHash = await sha256(ip + (process.env.IP_SALT || "fastgas"));
