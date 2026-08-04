@@ -335,6 +335,7 @@ export default function Home() {
         <strong>FastGas Kenya</strong>
         <span>fastgaskenya.shop</span>
         <a href={mailtoHref}>fastgaskenya@gmail.com</a>
+        <a href="/privacy">Privacy policy</a>
       </footer>
 
       <aside className={`cart-drawer ${cartOpen ? "open" : ""}`} aria-hidden={!cartOpen}>

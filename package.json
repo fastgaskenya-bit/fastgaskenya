@@ -9,10 +9,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "firebase-admin": "^12.7.0",
     "lucide-react": "^0.468.0",
     "next": "^16.2.10",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "ua-parser-js": "^1.0.39"
   },
   "devDependencies": {
     "eslint": "^9.39.2",

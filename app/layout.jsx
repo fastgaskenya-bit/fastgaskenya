@@ -1,5 +1,6 @@
 import Script from "next/script";
 import "./globals.css";
+import Tracker from "./components/Tracker";
 
 const siteUrl = "https://fastgaskenya.shop";
 const productImage =
@@ -84,6 +85,7 @@ const organizationSchema = {
 };
 
 export default function RootLayout({ children }) {
+  const clarityId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
   return (
     <html lang="en">
       <body>
@@ -105,6 +107,21 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        {clarityId ? (
+          <Script
+            id="ms-clarity"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "${clarityId}");
+              `,
+            }}
+          />
+        ) : null}
         <noscript>
           <img
             height="1"
@@ -118,6 +135,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <Tracker />
         {children}
       </body>
     </html>
