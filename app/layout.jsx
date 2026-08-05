@@ -81,7 +81,7 @@ const organizationSchema = {
     areaServed: "KE",
     availableLanguage: ["en"],
   },
-  sameAs: [],
+  sameAs: ["https://instagram.com/fastgas.ke"],
 };
 
 export default function RootLayout({ children }) {

@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Minus,
   PackageCheck,
+  Instagram,
   Plus,
   ScanLine,
   ShieldCheck,
@@ -335,6 +336,16 @@ export default function Home() {
         <strong>FastGas Kenya</strong>
         <span>fastgaskenya.shop</span>
         <a href={mailtoHref}>fastgaskenya@gmail.com</a>
+        <a
+          href="https://instagram.com/fastgas.ke"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="FastGas Kenya on Instagram"
+          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <Instagram size={16} aria-hidden="true" />
+          @fastgas.ke
+        </a>
         <a href="/privacy">Privacy policy</a>
       </footer>
 
