@@ -30,30 +30,32 @@ async function ipinfoLookup(ip) {
   const cached = ipCache.get(ip);
   if (cached && Date.now() - cached.at < IP_CACHE_TTL) return cached.data;
   try {
-    const r = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}?token=${token}`, {
-      // Give it a strict budget so slow lookups don't stall event writes.
-      signal: AbortSignal.timeout(1500),
-    });
+    // Uses the free IPinfo Lite endpoint: unlimited requests, returns
+    // country + ASN + AS name + AS domain. City/lat come from platform
+    // geo headers (Netlify x-nf-geo) elsewhere.
+    const r = await fetch(
+      `https://api.ipinfo.io/lite/${encodeURIComponent(ip)}?token=${token}`,
+      { signal: AbortSignal.timeout(1500) }
+    );
     if (!r.ok) return null;
     const j = await r.json();
-    const [lat, lon] = (j.loc || "").split(",").map((x) => parseFloat(x));
-    const org = j.org || "";
-    // org is like "AS37963 Alibaba (US) Technology Co., Ltd."
-    const asMatch = org.match(/^(AS\d+)\s+(.*)$/);
+    const org = j.as_name || "";
     const data = {
-      city: j.city || null,
-      region: j.region || null,
-      country: j.country || null,
-      postal: j.postal || null,
-      lat: Number.isFinite(lat) ? lat : null,
-      lon: Number.isFinite(lon) ? lon : null,
-      timezone: j.timezone || null,
-      hostname: j.hostname || null,
-      asn: asMatch ? asMatch[1] : null,
-      org: asMatch ? asMatch[2] : org || null,
-      // Free tier doesn't include privacy flags; heuristic below.
+      city: null,
+      region: null,
+      country: j.country_code || null,
+      countryName: j.country || null,
+      continent: j.continent || null,
+      postal: null,
+      lat: null,
+      lon: null,
+      timezone: null,
+      hostname: null,
+      asn: j.asn || null,
+      org,
+      asDomain: j.as_domain || null,
       isVpnLikely:
-        /vpn|proxy|hosting|datacenter|amazon|google cloud|azure|linode|digitalocean|hetzner|ovh/i.test(
+        /vpn|proxy|hosting|datacenter|amazon|google|microsoft|azure|linode|digitalocean|hetzner|ovh|oracle|cloudflare|akamai|fastly/i.test(
           org
         ),
     };
