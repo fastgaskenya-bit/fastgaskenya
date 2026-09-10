@@ -20,10 +20,27 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { getOrderMailto, getOrderWhatsapp, money, products, sharedSpecs, sourceNotes } from "../lib/catalog";
-import { trackMetaEvent } from "../lib/meta";
+import {
+  getOrderMailto,
+  getOrderWhatsapp,
+  getProductBySlug,
+  money,
+  priceFor,
+  productDetails,
+  products,
+  resolveFaqs,
+  sharedSpecs,
+  sourceNotes,
+} from "../../lib/catalog";
+import { trackMetaEvent } from "../../lib/meta";
+import { getCountry } from "../../lib/countries";
+import GeoSuggestion from "../components/geo-suggestion";
+import CountrySwitcher from "../components/country-switcher";
 
-export default function Home() {
+export default function HomeClient({ country: countryCode }) {
+  const country = getCountry(countryCode);
+  const featuredCan = getProductBySlug("fastgas-original-670g");
+  const featuredCase = getProductBySlug("fastgas-case-of-6");
   const [cart, setCart] = useState({});
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -32,11 +49,12 @@ export default function Home() {
       products
         .map((product) => ({
           ...product,
+          price: priceFor(product, country.code),
           quantity: cart[product.id] || 0,
-          total: (cart[product.id] || 0) * product.price,
+          total: (cart[product.id] || 0) * priceFor(product, country.code),
         }))
         .filter((item) => item.quantity > 0),
-    [cart],
+    [cart, country.code],
   );
 
   const total = lineItems.reduce((sum, item) => sum + item.total, 0);
@@ -64,8 +82,8 @@ export default function Home() {
           content_ids: [product?.contentId || id],
           content_type: "product",
           contents: [{ id: product?.contentId || id, quantity: 1 }],
-          value: product?.price || 0,
-          currency: "KES",
+          value: product ? priceFor(product, country.code) : 0,
+          currency: country.currency,
         });
       }
 
@@ -74,27 +92,29 @@ export default function Home() {
   };
 
   const mailtoHref = useMemo(() => {
-    return getOrderMailto(lineItems);
-  }, [lineItems]);
+    return getOrderMailto(lineItems, country.code);
+  }, [lineItems, country.code]);
 
   const whatsappHref = useMemo(() => {
-    return getOrderWhatsapp(lineItems);
-  }, [lineItems]);
+    return getOrderWhatsapp(lineItems, country.code);
+  }, [lineItems, country.code]);
 
   return (
     <main>
+      <GeoSuggestion country={country.code} />
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="FastGas Kenya home">
+        <a className="brand" href="#top" aria-label={`${country.brandName} home`}>
           <span className="brand-mark">F&gt;G</span>
           <span>
             FastGas
-            <small>Kenya</small>
+            <small>{country.brandSuffix}</small>
           </span>
         </a>
         <nav aria-label="Primary navigation">
           <a href="#shop">Shop</a>
           <a href="#verify">Verify</a>
           <a href="#specs">Specs</a>
+          <a href="#faq">FAQ</a>
         </nav>
         <button
           className="cart-button"
@@ -105,7 +125,7 @@ export default function Home() {
               content_type: "product",
               contents: cartContents,
               num_items: itemCount,
-              currency: "KES",
+              currency: country.currency,
               value: total,
             });
           }}
@@ -120,9 +140,12 @@ export default function Home() {
         <div className="hero-copy">
           <p className="kicker">
             <Sparkles size={16} />
-            fastgaskenya.shop
+            {country.domain}
           </p>
-          <h1>FastGas Original 670g for Kenya’s kitchens, bars, and events.</h1>
+          <h1>
+            FastGas Original 670g for {country.possessive} kitchens, bars, and
+            events.
+          </h1>
           <p className="hero-lede">
             Premium food-service N2O cream charger cylinders for whipped cream,
             espumas, sauces, and cocktail programs. Order single cans or sealed
@@ -136,12 +159,12 @@ export default function Home() {
               rel="noopener noreferrer"
               onClick={() => {
                 trackMetaEvent("InitiateCheckout", {
-                  content_name: "FastGas Kenya order",
+                  content_name: `${country.brandName} order`,
                   content_ids: cartContentIds,
                   content_type: "product",
                   contents: cartContents,
                   num_items: itemCount,
-                  currency: "KES",
+                  currency: country.currency,
                   value: total,
                 });
               }}
@@ -154,10 +177,16 @@ export default function Home() {
           </div>
           <div className="price-strip" aria-label="Featured prices">
             <span>
-              Can <strong>KSh 4,800</strong>
+              Can{" "}
+              <strong>
+                {money(priceFor(featuredCan, country.code), country.code)}
+              </strong>
             </span>
             <span>
-              Pack of 6 <strong>KSh 28,000</strong>
+              Pack of 6{" "}
+              <strong>
+                {money(priceFor(featuredCase, country.code), country.code)}
+              </strong>
             </span>
           </div>
         </div>
@@ -186,7 +215,7 @@ export default function Home() {
       <section className="trust-band" aria-label="Service promises">
         <div>
           <Truck />
-          Nairobi dispatch
+          {country.dispatchLine}
         </div>
         <div>
           <ShieldCheck />
@@ -223,7 +252,7 @@ export default function Home() {
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
                 <ul>
-                  {product.details.map((detail) => (
+                  {productDetails(product, country.code).map((detail) => (
                     <li key={detail}>
                       <Check size={15} />
                       {detail}
@@ -239,8 +268,8 @@ export default function Home() {
                     content_category: "product",
                     content_ids: [product.contentId || product.id],
                     content_type: "product",
-                    currency: "KES",
-                    value: product.price,
+                    currency: country.currency,
+                    value: priceFor(product, country.code),
                   });
                 }}
               >
@@ -249,7 +278,7 @@ export default function Home() {
               </div>
               <div className="product-buy">
                 <span>
-                  <strong>{money(product.price)}</strong>
+                  <strong>{money(priceFor(product, country.code), country.code)}</strong>
                   <small>{product.unit}</small>
                 </span>
                 <div className="stepper" aria-label={`${product.name} quantity`}>
@@ -312,6 +341,21 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="faq" className="section faq-section">
+        <div className="section-heading">
+          <p className="kicker">Buying FastGas in {country.name}</p>
+          <h2>Questions we get from {country.name} buyers.</h2>
+        </div>
+        <div className="faq-list">
+          {resolveFaqs(country).map((faq) => (
+            <details className="faq-item" key={faq.q}>
+              <summary>{faq.q}</summary>
+              <p>{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <section className="section source-section">
         <div className="source-panel">
           <p className="kicker">Sourced product info</p>
@@ -325,28 +369,29 @@ export default function Home() {
             ))}
           </div>
           <p className="responsible">
-            FastGas Kenya is presented for culinary and authorised business use.
-            Nitrous oxide must be handled responsibly, kept away from children,
-            and never inhaled.
+            {country.brandName} is presented for culinary and authorised
+            business use. Nitrous oxide must be handled responsibly, kept away
+            from children, and never inhaled.
           </p>
         </div>
       </section>
 
       <footer>
-        <strong>FastGas Kenya</strong>
-        <span>fastgaskenya.shop</span>
-        <a href={mailtoHref}>fastgaskenya@gmail.com</a>
+        <strong>{country.brandName}</strong>
+        <span>{country.domain}</span>
+        <a href={mailtoHref}>{country.email}</a>
         <a
-          href="https://instagram.com/fastgas.ke"
+          href={country.instagramUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="FastGas Kenya on Instagram"
+          aria-label={`${country.brandName} on Instagram`}
           style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
         >
           <Instagram size={16} aria-hidden="true" />
-          @fastgas.ke
+          {country.instagramHandle}
         </a>
         <a href="/privacy">Privacy policy</a>
+        <CountrySwitcher country={country.code} />
       </footer>
 
       <aside className={`cart-drawer ${cartOpen ? "open" : ""}`} aria-hidden={!cartOpen}>
@@ -355,7 +400,7 @@ export default function Home() {
           <div className="cart-top">
             <div>
               <p className="kicker">Your order</p>
-              <h2>FastGas cart</h2>
+              <h2>{country.brandSuffix} cart</h2>
             </div>
             <button className="icon-button" onClick={() => setCartOpen(false)} aria-label="Close cart">
               <X size={20} />
@@ -371,10 +416,10 @@ export default function Home() {
                   <div>
                     <strong>{item.name}</strong>
                     <span>
-                      {item.quantity} x {money(item.price)}
+                      {item.quantity} x {money(item.price, country.code)}
                     </span>
                   </div>
-                  <b>{money(item.total)}</b>
+                  <b>{money(item.total, country.code)}</b>
                 </div>
               ))
             )}
@@ -382,7 +427,7 @@ export default function Home() {
 
           <div className="cart-total">
             <span>Total</span>
-            <strong>{money(total)}</strong>
+            <strong>{money(total, country.code)}</strong>
           </div>
 
           <a
@@ -397,7 +442,7 @@ export default function Home() {
                 content_type: "product",
                 contents: cartContents,
                 num_items: itemCount,
-                currency: "KES",
+                currency: country.currency,
                 value: total,
               });
             }}

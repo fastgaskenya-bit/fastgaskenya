@@ -17,47 +17,62 @@ import {
   getOrderWhatsapp,
   getProductBySlug,
   money,
+  priceFor,
   products,
   sourceNotes,
-} from "../../../lib/catalog";
-import MetaTrackedLink from "../../components/meta-tracked-link";
+} from "../../../../lib/catalog";
+import {
+  COUNTRY_CODES,
+  alternateLanguages,
+  getCountry,
+  isCountryCode,
+} from "../../../../lib/countries";
+import MetaTrackedLink from "../../../components/meta-tracked-link";
+import CountrySwitcher from "../../../components/country-switcher";
 
 export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+  return COUNTRY_CODES.flatMap((country) =>
+    products.map((product) => ({ country, slug: product.slug })),
+  );
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
+  const { country: code, slug } = await params;
   const product = getProductBySlug(slug);
+  const country = getCountry(code);
 
-  if (!product) {
+  if (!product || !isCountryCode(code)) {
     return {
-      title: "FastGas Kenya Product",
+      title: `${country.brandName} Product`,
     };
   }
 
+  const price = money(priceFor(product, country.code), country.code);
+  const path = `/products/${product.slug}`;
+
   return {
-    title: `${product.shortName} | Buy in Kenya`,
-    description: `${product.name} for culinary cocktail foams, espumas, whipped cream, cafe, bar, and catering use in Kenya. ${money(product.price)}. Order on WhatsApp for Nairobi dispatch.`,
+    title: `${product.shortName} | Buy in ${country.name}`,
+    description: `${product.name} for culinary cocktail foams, espumas, whipped cream, cafe, bar, and catering use in ${country.name}. ${price}. Order on WhatsApp for ${country.capital} dispatch.`,
     keywords: [
       product.shortName,
-      "FastGas Kenya",
-      "N2O cream charger Kenya",
-      "buy cream charger Nairobi",
+      `${product.shortName} ${country.name}`,
+      `${product.shortName} price ${country.name}`,
+      ...country.seo.productKeywords,
       ...product.useCases,
     ],
     alternates: {
-      canonical: `/products/${product.slug}`,
+      canonical: path,
+      languages: alternateLanguages(path),
     },
     robots: {
       index: true,
       follow: true,
     },
     openGraph: {
-      title: `${product.shortName} - ${money(product.price)}`,
+      title: `${product.shortName} - ${price}`,
       description: product.detailDescription,
-      url: `https://fastgaskenya.shop/products/${product.slug}`,
-      siteName: "FastGas Kenya",
+      url: `${country.siteUrl}${path}`,
+      siteName: country.brandName,
       images: [
         {
           url: product.image,
@@ -66,12 +81,12 @@ export async function generateMetadata({ params }) {
           alt: product.alt,
         },
       ],
-      locale: "en_KE",
+      locale: country.ogLocale,
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.shortName} - ${money(product.price)}`,
+      title: `${product.shortName} - ${price}`,
       description: product.detailDescription,
       images: [product.image],
     },
@@ -79,15 +94,20 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProductDetailPage({ params }) {
-  const { slug } = await params;
+  const { country: code, slug } = await params;
   const product = getProductBySlug(slug);
 
-  if (!product) {
+  if (!product || !isCountryCode(code)) {
     notFound();
   }
 
+  const country = getCountry(code);
+  const path = `/products/${product.slug}`;
+  const price = priceFor(product, country.code);
+
   const whatsappHref = getOrderWhatsapp(
-    [{ ...product, quantity: 1, total: product.price }],
+    [{ ...product, price, quantity: 1, total: price }],
+    country.code,
     product,
   );
   const structuredData = {
@@ -103,11 +123,40 @@ export default async function ProductDetailPage({ params }) {
     category: "Food-service cream charger",
     offers: {
       "@type": "Offer",
-      priceCurrency: "KES",
-      price: product.price,
+      priceCurrency: country.currency,
+      price,
       availability: "https://schema.org/InStock",
-      url: `https://fastgaskenya.shop/products/${product.slug}`,
+      url: `${country.siteUrl}${path}`,
+      areaServed: {
+        "@type": "Country",
+        name: country.name,
+        identifier: country.iso,
+      },
+      seller: {
+        "@type": "Organization",
+        name: country.brandName,
+        url: country.siteUrl,
+      },
     },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: country.brandName,
+        item: country.siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.shortName,
+        item: `${country.siteUrl}${path}`,
+      },
+    ],
   };
 
   return (
@@ -116,13 +165,17 @@ export default async function ProductDetailPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
 
       <header className="site-header">
-        <Link className="brand" href="/" aria-label="FastGas Kenya home">
+        <Link className="brand" href="/" aria-label={`${country.brandName} home`}>
           <span className="brand-mark">F&gt;G</span>
           <span>
             FastGas
-            <small>Kenya</small>
+            <small>{country.brandSuffix}</small>
           </span>
         </Link>
         <nav aria-label="Product navigation">
@@ -152,7 +205,7 @@ export default async function ProductDetailPage({ params }) {
 
           <div className="price-strip" aria-label="Product price">
             <span>
-              Price <strong>{money(product.price)}</strong>
+              Price <strong>{money(price, country.code)}</strong>
             </span>
             <span>
               Unit <strong>{product.unit}</strong>
@@ -171,8 +224,8 @@ export default async function ProductDetailPage({ params }) {
                 content_category: "product",
                 content_ids: [product.contentId || product.id],
                 content_type: "product",
-                currency: "KES",
-                value: product.price,
+                currency: country.currency,
+                value: price,
               }}
             >
               <MessageCircle size={18} /> Order Now on WhatsApp
@@ -207,7 +260,7 @@ export default async function ProductDetailPage({ params }) {
       <section className="trust-band" aria-label="Product promises">
         <div>
           <Truck />
-          Kenya orders
+          {country.ordersLine}
         </div>
         <div>
           <ShieldCheck />
@@ -230,7 +283,8 @@ export default async function ProductDetailPage({ params }) {
           <p>
             Send ads here when the buyer intent is cocktails, espumas, whipped
             cream, dessert service, cafe cold foam, catering prep, or restaurant
-            stock.
+            stock across {country.cities.slice(0, 3).join(", ")}, and the rest of{" "}
+            {country.name}.
           </p>
         </div>
 
@@ -282,11 +336,13 @@ export default async function ProductDetailPage({ params }) {
         <div className="source-panel product-order-panel">
           <div>
             <p className="kicker">Order {product.shortName}</p>
-            <h2>{money(product.price)} for {product.unit}.</h2>
+            <h2>
+              {money(price, country.code)} for {product.unit}.
+            </h2>
             <p>
               Message us on WhatsApp to order for culinary use in bars, cafes,
-              restaurants, bakeries, catering teams, and food-service
-              operations.
+              restaurants, bakeries, catering teams, and food-service operations
+              across {country.name}, with dispatch from {country.capital}.
             </p>
             <div className="source-list">
               {sourceNotes.map((note) => (
@@ -299,7 +355,9 @@ export default async function ProductDetailPage({ params }) {
           </div>
           <div className="order-card">
             <strong>{product.name}</strong>
-            <span>{money(product.price)} · {product.unit}</span>
+            <span>
+              {money(price, country.code)} · {product.unit}
+            </span>
             <MetaTrackedLink
               className="checkout-button"
               href={whatsappHref}
@@ -311,8 +369,8 @@ export default async function ProductDetailPage({ params }) {
                 content_category: "product",
                 content_ids: [product.contentId || product.id],
                 content_type: "product",
-                currency: "KES",
-                value: product.price,
+                currency: country.currency,
+                value: price,
               }}
             >
               <MessageCircle size={18} />
@@ -327,9 +385,13 @@ export default async function ProductDetailPage({ params }) {
       </section>
 
       <footer>
-        <strong>FastGas Kenya</strong>
-        <span>fastgaskenya.shop/products/{product.slug}</span>
-        <a href="mailto:fastgaskenya@gmail.com">fastgaskenya@gmail.com</a>
+        <strong>{country.brandName}</strong>
+        <span>
+          {country.domain}
+          {path}
+        </span>
+        <a href={`mailto:${country.email}`}>{country.email}</a>
+        <CountrySwitcher country={country.code} path={path} />
       </footer>
     </main>
   );

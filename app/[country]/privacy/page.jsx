@@ -1,12 +1,31 @@
-export const metadata = {
-  title: "Privacy Policy",
-  description:
-    "How FastGas Kenya collects, uses, and stores visitor and customer information.",
-  alternates: { canonical: "/privacy" },
-  robots: { index: true, follow: true },
-};
+import {
+  alternateLanguages,
+  getCountry,
+  isCountryCode,
+} from "../../../lib/countries";
+import { COUNTRY_CODES } from "../../../lib/countries";
 
-export default function PrivacyPage() {
+export function generateStaticParams() {
+  return COUNTRY_CODES.map((country) => ({ country }));
+}
+
+export async function generateMetadata({ params }) {
+  const { country: code } = await params;
+  const country = getCountry(code);
+  return {
+    title: "Privacy Policy",
+    description: `How ${country.brandName} collects, uses, and stores visitor and customer information.`,
+    alternates: {
+      canonical: "/privacy",
+      languages: alternateLanguages("/privacy"),
+    },
+    robots: { index: true, follow: true },
+  };
+}
+
+export default async function PrivacyPage({ params }) {
+  const { country: code } = await params;
+  const country = getCountry(isCountryCode(code) ? code : undefined);
   const updated = "August 4, 2026";
   return (
     <main
@@ -26,10 +45,10 @@ export default function PrivacyPage() {
       <p style={{ color: "#666", fontSize: 14 }}>Last updated: {updated}</p>
 
       <p>
-        FastGas Kenya (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates{" "}
-        <strong>fastgaskenya.shop</strong>. This policy explains what information we
-        collect about visitors and customers, how we use it, and your rights under
-        Kenya&apos;s Data Protection Act, 2019.
+        {country.brandName} (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;)
+        operates <strong>{country.domain}</strong>. This policy explains what
+        information we collect about visitors and customers, how we use it, and
+        your rights under {country.dataProtectionLaw}.
       </p>
 
       <h2>1. Information we collect automatically</h2>
@@ -102,8 +121,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Order and communication records:</strong> kept for as long as
-          required to run our business and comply with Kenyan tax and consumer
-          law.
+          required to run our business and comply with {country.legalAdjective}{" "}
+          tax and consumer law.
         </li>
       </ul>
 
@@ -164,7 +183,7 @@ export default function PrivacyPage() {
       <h2>8. Contact</h2>
       <p>
         For any privacy question or to exercise the rights above, email{" "}
-        <a href="mailto:fastgaskenya@gmail.com">fastgaskenya@gmail.com</a>.
+        <a href={`mailto:${country.email}`}>{country.email}</a>.
       </p>
 
       <h2>9. Changes to this policy</h2>

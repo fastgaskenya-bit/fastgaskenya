@@ -2,86 +2,25 @@ import Script from "next/script";
 import "./globals.css";
 import Tracker from "./components/Tracker";
 
-const siteUrl = "https://fastgaskenya.shop";
 const productImage =
   "https://fast-gas.com/wp-content/uploads/2022/07/PRODUCT-PAGE_670_front-view-e1764672680684.png";
 
+// Market-specific metadata (title, description, canonical, hreflang, schema)
+// lives in app/[country]/layout.jsx. This root layout only carries what is
+// shared by every route, including the admin area.
 export const metadata = {
-  metadataBase: new URL(siteUrl),
   title: {
-    default: "FastGas Kenya | Buy N2O Cream Chargers in Nairobi",
-    template: "%s | FastGas Kenya",
+    default: "FastGas | N2O Cream Chargers",
+    template: "%s | FastGas",
   },
   description:
-    "Buy genuine FastGas Original 670g food-grade N2O cream charger cylinders in Kenya. Single cans or sealed cases of 6 for bars, cafes, restaurants, and caterers. Order on WhatsApp for fast Nairobi dispatch.",
-  keywords: [
-    "FastGas Kenya",
-    "N2O cream chargers Kenya",
-    "cream chargers Nairobi",
-    "buy N2O cylinder Kenya",
-    "whipped cream chargers Kenya",
-    "FastGas 670g",
-    "cocktail espuma chargers",
-    "nitrous oxide cream charger Nairobi",
-  ],
-  authors: [{ name: "FastGas Kenya" }],
-  applicationName: "FastGas Kenya",
+    "Genuine FastGas Original 670g food-grade N2O cream charger cylinders for bars, cafes, restaurants, and caterers.",
+  applicationName: "FastGas",
   category: "Food-service equipment",
-  alternates: {
-    canonical: "/",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-    },
-  },
+  icons: { icon: "/icon.svg" },
   openGraph: {
-    title: "FastGas Kenya | Buy N2O Cream Chargers in Nairobi",
-    description:
-      "FastGas Original 670g cream charger cylinders, single cans and cases of six, for Kenya's bars, cafes, and caterers.",
-    url: siteUrl,
-    siteName: "FastGas Kenya",
-    images: [
-      {
-        url: productImage,
-        width: 1200,
-        height: 996,
-        alt: "FastGas Original 670g N2O cream charger cylinder",
-      },
-    ],
-    locale: "en_KE",
-    type: "website",
+    images: [{ url: productImage, width: 1200, height: 996 }],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "FastGas Kenya | Buy N2O Cream Chargers in Nairobi",
-    description:
-      "Genuine FastGas Original 670g N2O cream charger cylinders. Order on WhatsApp for fast Nairobi dispatch.",
-    images: [productImage],
-  },
-};
-
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "FastGas Kenya",
-  url: siteUrl,
-  logo: productImage,
-  description:
-    "Retailer of FastGas Original 670g food-grade N2O cream charger cylinders for Kenya's bars, cafes, restaurants, and caterers.",
-  areaServed: "KE",
-  contactPoint: {
-    "@type": "ContactPoint",
-    contactType: "sales",
-    telephone: "+254704129897",
-    areaServed: "KE",
-    availableLanguage: ["en"],
-  },
-  sameAs: ["https://instagram.com/fastgas.ke"],
 };
 
 export default function RootLayout({ children }) {
@@ -131,10 +70,6 @@ export default function RootLayout({ children }) {
             alt=""
           />
         </noscript>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
         <Tracker />
         {children}
       </body>
