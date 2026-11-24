@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import { COUNTRY_CODES, getCountry, isCountryCode } from "../../lib/countries";
 import { alternateLanguages } from "../../lib/countries";
 import { resolveFaqs } from "../../lib/catalog";
+import { getCatalogProducts } from "../../lib/catalog-prices";
 import HomeClient from "./home-client";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return COUNTRY_CODES.map((country) => ({ country }));
@@ -42,10 +45,11 @@ export default async function CountryHomePage({ params }) {
   if (!isCountryCode(code)) notFound();
 
   const country = getCountry(code);
+  const catalog = await getCatalogProducts();
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: resolveFaqs(country).map((faq) => ({
+    mainEntity: resolveFaqs(country, catalog).map((faq) => ({
       "@type": "Question",
       name: faq.q,
       acceptedAnswer: { "@type": "Answer", text: faq.a },
@@ -58,7 +62,7 @@ export default async function CountryHomePage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HomeClient country={code} />
+      <HomeClient country={code} catalogProducts={catalog} />
     </>
   );
 }

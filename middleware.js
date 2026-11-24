@@ -28,7 +28,9 @@ function adminAuth(req, pathname) {
   // Cron can hit it without needing a login cookie.
   const needsAuth =
     pathname.startsWith("/admin/analytics") ||
+    pathname.startsWith("/admin/prices") ||
     pathname.startsWith("/api/admin/analytics") ||
+    pathname.startsWith("/api/admin/prices") ||
     pathname.startsWith("/api/admin/session");
 
   if (!needsAuth) return null;

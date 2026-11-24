@@ -21,6 +21,7 @@ import {
   products,
   sourceNotes,
 } from "../../../../lib/catalog";
+import { getCatalogProducts } from "../../../../lib/catalog-prices";
 import {
   COUNTRY_CODES,
   alternateLanguages,
@@ -30,6 +31,8 @@ import {
 import MetaTrackedLink from "../../../components/meta-tracked-link";
 import CountrySwitcher from "../../../components/country-switcher";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return COUNTRY_CODES.flatMap((country) =>
     products.map((product) => ({ country, slug: product.slug })),
@@ -38,7 +41,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { country: code, slug } = await params;
-  const product = getProductBySlug(slug);
+  const catalog = await getCatalogProducts();
+  const product = getProductBySlug(slug, catalog);
   const country = getCountry(code);
 
   if (!product || !isCountryCode(code)) {
@@ -95,7 +99,8 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetailPage({ params }) {
   const { country: code, slug } = await params;
-  const product = getProductBySlug(slug);
+  const catalog = await getCatalogProducts();
+  const product = getProductBySlug(slug, catalog);
 
   if (!product || !isCountryCode(code)) {
     notFound();

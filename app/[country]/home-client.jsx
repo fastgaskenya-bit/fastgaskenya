@@ -37,16 +37,16 @@ import { getCountry } from "../../lib/countries";
 import GeoSuggestion from "../components/geo-suggestion";
 import CountrySwitcher from "../components/country-switcher";
 
-export default function HomeClient({ country: countryCode }) {
+export default function HomeClient({ country: countryCode, catalogProducts = products }) {
   const country = getCountry(countryCode);
-  const featuredCan = getProductBySlug("fastgas-original-670g");
-  const featuredCase = getProductBySlug("fastgas-case-of-6");
+  const featuredCan = getProductBySlug("fastgas-original-670g", catalogProducts);
+  const featuredCase = getProductBySlug("fastgas-case-of-6", catalogProducts);
   const [cart, setCart] = useState({});
   const [cartOpen, setCartOpen] = useState(false);
 
   const lineItems = useMemo(
     () =>
-      products
+      catalogProducts
         .map((product) => ({
           ...product,
           price: priceFor(product, country.code),
@@ -54,7 +54,7 @@ export default function HomeClient({ country: countryCode }) {
           total: (cart[product.id] || 0) * priceFor(product, country.code),
         }))
         .filter((item) => item.quantity > 0),
-    [cart, country.code],
+    [cart, country.code, catalogProducts],
   );
 
   const total = lineItems.reduce((sum, item) => sum + item.total, 0);
@@ -75,7 +75,7 @@ export default function HomeClient({ country: countryCode }) {
       };
 
       if (change > 0 && nextValue > 0) {
-        const product = products.find((item) => item.id === id);
+        const product = catalogProducts.find((item) => item.id === id);
         trackMetaEvent("AddToCart", {
           content_name: product?.name || id,
           content_category: "product",
@@ -242,7 +242,7 @@ export default function HomeClient({ country: countryCode }) {
         </div>
 
         <div className="product-grid">
-          {products.map((product) => (
+          {catalogProducts.map((product) => (
             <article className="product-card" key={product.id}>
               <div className="product-image">
                 <Image src={product.image} alt={product.alt} width={500} height={500} />
@@ -347,7 +347,7 @@ export default function HomeClient({ country: countryCode }) {
           <h2>Questions we get from {country.name} buyers.</h2>
         </div>
         <div className="faq-list">
-          {resolveFaqs(country).map((faq) => (
+          {resolveFaqs(country, catalogProducts).map((faq) => (
             <details className="faq-item" key={faq.q}>
               <summary>{faq.q}</summary>
               <p>{faq.a}</p>

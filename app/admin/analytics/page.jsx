@@ -61,6 +61,9 @@ export default function AnalyticsPage() {
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <Link href="/admin/prices" style={{ ...btnStyle, textDecoration: "none" }}>
+            Edit prices
+          </Link>
           <select
             value={hours}
             onChange={(e) => setHours(parseInt(e.target.value, 10))}
